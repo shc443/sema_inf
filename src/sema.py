@@ -1,57 +1,47 @@
-# !pip install --update openpyxl
-
-# from pl_bolts.callbacks import PrintTableMetricsCallback
-
-# import pytorch_lightning as pl
-from torch.utils.data import Dataset, DataLoader
-from torchmetrics import Accuracy, F1Score
-from torchmetrics.classification import MultilabelF1Score
-
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader
-
-# from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
-# from pytorch_lightning.loggers import TensorBoardLogger
-# from keras.utils.data_utils import pad_sequences
-
-import seaborn as sns
-import matplotlib.pyplot as plt
-import re
-import pandas as pd
+#!/usr/bin/env python3
+"""
+SEMA VOC Topic Labeler Model
+Korean Voice of Customer sentiment analysis using DeBERTa
+"""
+# Core imports
 import os
+import re
+import pickle
+import numpy as np
+import pandas as pd
+from collections import Counter
+from tqdm import tqdm
 
-import tensorflow as tf
+# PyTorch imports
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.utils.data import Dataset, DataLoader, TensorDataset, RandomSampler, SequentialSampler
 
-from transformers import AdamW, BertConfig
+# Transformers imports
 from transformers import AutoTokenizer, AutoModelForMaskedLM, AutoConfig
 from transformers import RobertaConfig, RobertaModel
+from transformers import DebertaV2Config, DebertaV2ForSequenceClassification
 from transformers import get_linear_schedule_with_warmup
-from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
-from keras.preprocessing.sequence import pad_sequences
+
+# Metrics
+from torchmetrics import Accuracy, F1Score
+from torchmetrics.classification import MultilabelF1Score
+
+# Sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.metrics import f1_score
-from transformers import AutoTokenizer, AutoModelForMaskedLM, DebertaV2Config, DebertaV2ForSequenceClassification
-from transformers import RobertaConfig, RobertaModel
-import numpy as np
+
+# Visualization (optional)
+import seaborn as sns
+import matplotlib.pyplot as plt
+# Additional utilities
 import random
 import time
 import datetime
-import pickle 
-from tqdm import tqdm
+# Enable tqdm for pandas
 tqdm.pandas()
-
-# from konlpy.tag import Mecab
-from tqdm import tqdm
-from collections import Counter
-# mecab = Mecab()
-
-from os import listdir
-from os.path import isfile, join
 
 class VOC_Dataset2(Dataset):
 
