@@ -80,12 +80,13 @@ def upload_to_huggingface(repo_id="shc443/sema-model", token=None):
             file_size = os.path.getsize(local_path)
             print(f"📤 Uploading {local_path} ({file_size / 1e6:.1f} MB)...")
             
-            # Upload file
+            # Upload file (with resume support for large files)
             upload_file(
                 path_or_fileobj=local_path,
                 path_in_repo=os.path.basename(local_path),  # Upload with just the filename
                 repo_id=repo_id,
-                repo_type="model"
+                repo_type="model",
+                resume=True  # Enable resume for large files
             )
             
             uploaded_files.append(local_path)
