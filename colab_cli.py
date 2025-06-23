@@ -434,13 +434,13 @@ def setup_colab():
     except:
         print("⚠️ Java installation failed - may already be installed")
     
-    # Install Python packages
+    # Install Python packages with compatible versions
     packages = [
-        'huggingface_hub',
-        'torch',
-        'transformers',
-        'torchmetrics',
-        'lightning'
+        'huggingface_hub>=0.16.0',
+        'torch>=2.0.0',
+        'transformers>=4.30.0,<5.0.0',
+        'torchmetrics>=0.11.0',
+        'lightning>=2.0.0'
     ]
     
     for package in packages:
