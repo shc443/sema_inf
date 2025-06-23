@@ -130,9 +130,16 @@ Temporary Items
 *.ckpt
 *.pth
 *.bin
-*.pkl
 
-# Data files
+# Data files (allow required pkl files)
 *.xlsx
 *.csv
-data/
+data/input/
+data/output/
+data/train/
+
+# Keep required model files
+!data/data2.pkl
+!data/voc_etc.pkl
+!data/keyword_doc.pkl
+!model/*.ckpt
