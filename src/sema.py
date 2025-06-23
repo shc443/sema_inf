@@ -7,10 +7,9 @@ from torch.utils.data import Dataset, DataLoader
 from torchmetrics import Accuracy, F1Score
 from torchmetrics.classification import MultilabelF1Score
 
-# import lightning.pytorch as pl
-import lightning as L
-from lightning.pytorch.callbacks.early_stopping import EarlyStopping
-from lightning.pytorch.callbacks import LearningRateMonitor
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader
 
 # from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 # from pytorch_lightning.loggers import TensorBoardLogger
@@ -84,9 +83,8 @@ class VOC_Dataset2(Dataset):
                 attention_mask=encoding["attention_mask"].flatten(),
                 labels=torch.FloatTensor(voc_labels))
 
-class VOC_DataModule(L.LightningDataModule):
+class VOC_DataModule:
   def __init__(self, train_df, test_df, tokenizer, batch_size=4, max_token_len=200):
-    super().__init__()
     self.batch_size = batch_size
     self.train_df = train_df
     self.test_df = test_df
@@ -110,7 +108,7 @@ class VOC_DataModule(L.LightningDataModule):
   def predict_dataloader(self):
     return DataLoader(self.test_dataset, batch_size=self.batch_size)
 
-class VOC_TopicLabeler(L.LightningModule):
+class VOC_TopicLabeler(nn.Module):
   def __init__(self, n_classes=None, n_training_steps=None, n_warmup_steps=10000, model = None):
     super().__init__()
     # self.config = config
@@ -138,60 +136,36 @@ class VOC_TopicLabeler(L.LightningModule):
         loss = self.criterion(pooled_output, labels)
     return loss, torch.sigmoid(pooled_output)
 
-  def training_step(self, batch, batch_idx):
-    input_ids = batch["input_ids"]
-    attention_mask = batch["attention_mask"]
-    labels = batch["labels"]
-    loss, outputs = self(input_ids, attention_mask, labels)
-    self.training_step_outputs.append([outputs, labels])
-
-    self.log("train_loss", loss, prog_bar=True, logger=True)
-    return {"loss": loss, "predictions": outputs, "labels": labels}
-
-  def validation_step(self, batch, batch_idx):
-    input_ids = batch["input_ids"]
-    attention_mask = batch["attention_mask"]
-    labels = batch["labels"]
-    loss, outputs = self(input_ids, attention_mask, labels)
-    self.log("val_loss", loss, prog_bar=True, logger=True)
-    return loss
-
-  def test_step(self, batch, batch_idx):
-    input_ids = batch["input_ids"]
-    attention_mask = batch["attention_mask"]
-    labels = batch["labels"]
-    loss, outputs = self(input_ids, attention_mask, labels)
-    self.log("test_loss", loss, prog_bar=True)#, logger=True)
-    return loss
-
-  def predict_step(self, batch, batch_idx, dataloader_idx=0):
-    input_ids = batch["input_ids"]
-    attention_mask = batch["attention_mask"]
-    labels = batch["labels"]
-    loss, outputs = self(input_ids, attention_mask, labels)
-    # self.log("predic_loss", loss, prog_bar=True)#, logger=True)
-    return outputs
-
-  def on_train_epoch_end(self):
-    labels = []
+  def predict(self, dataloader, device='cuda'):
+    """Run inference on a dataloader"""
+    self.eval()
     predictions = []
-    for output in self.training_step_outputs:
-      for out_labels in output[0].detach().cpu():
-        labels.append(out_labels)
-      for out_predictions in output[1].detach().cpu():
-        predictions.append(out_predictions)
-    labels = torch.stack(labels).int()
-    predictions = torch.stack(predictions)
-      
-    # for i, name in enumerate(LABEL_COLUMNS):
-    class_F1 = self.acc(predictions.cuda(), labels.cuda())
-    self.logger.experiment.add_scalar("f1/Train", class_F1, self.current_epoch)
-    self.training_step_outputs.clear()
-
-  def configure_optimizers(self):
-    optimizer = AdamW(self.parameters(), lr=2e-5)
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=self.n_warmup_steps, num_training_steps=self.n_training_steps)
-    return dict(optimizer=optimizer, lr_scheduler=dict(scheduler=scheduler, interval='step'))
+    
+    with torch.no_grad():
+      for batch in dataloader:
+        input_ids = batch["input_ids"].to(device)
+        attention_mask = batch["attention_mask"].to(device)
+        
+        loss, outputs = self(input_ids, attention_mask)
+        predictions.append(outputs.cpu())
+    
+    return predictions
+  
+  @classmethod
+  def load_from_checkpoint(cls, checkpoint_path, **kwargs):
+    """Load model from checkpoint file"""
+    checkpoint = torch.load(checkpoint_path, map_location='cpu')
+    
+    # Create model instance
+    model = cls(**kwargs)
+    
+    # Load state dict
+    if 'state_dict' in checkpoint:
+      model.load_state_dict(checkpoint['state_dict'])
+    else:
+      model.load_state_dict(checkpoint)
+    
+    return model
 
 def findall_vec(key,voc):
   try:
