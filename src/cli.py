@@ -17,15 +17,51 @@ from tqdm import tqdm
 from .sema import VOC_TopicLabeler, VOC_DataModule
 
 class SemaInference:
-    def __init__(self, model_path=None, checkpoint_path=None):
+    def __init__(self, model_path=None, checkpoint_path=None, hf_repo=None):
         self.model_name = model_path or 'team-lucid/deberta-v3-xlarge-korean'
-        self.checkpoint_path = checkpoint_path or f"{self.model_name}_20ep_full_mar17_dropna.ckpt"
+        self.hf_repo = hf_repo or 'shc443/sema-model'  # Default to your HF repo
+        self.checkpoint_path = checkpoint_path or "model/deberta-v3-xlarge-korean_20ep_full_mar17_dropna.ckpt"
         self.max_len = 256
         self.batch_size = 12
         self.opt_thresh = 0.5
         
         self._load_components()
         
+    def _download_from_hf(self, filename):
+        """Download files from Hugging Face repository"""
+        try:
+            from huggingface_hub import hf_hub_download
+            print(f"📥 Downloading {filename} from {self.hf_repo}...")
+            
+            local_path = hf_hub_download(
+                repo_id=self.hf_repo,
+                filename=filename,
+                cache_dir="./cache"
+            )
+            print(f"✓ Downloaded {filename}")
+            return local_path
+            
+        except Exception as e:
+            print(f"✗ Error downloading {filename}: {e}")
+            return None
+    
+    def _ensure_file_exists(self, filepath, hf_filename=None):
+        """Ensure file exists locally, download from HF if needed"""
+        if os.path.exists(filepath):
+            return filepath
+            
+        if hf_filename:
+            print(f"File {filepath} not found locally, downloading from Hugging Face...")
+            downloaded_path = self._download_from_hf(hf_filename)
+            if downloaded_path:
+                # Copy to expected location
+                import shutil
+                os.makedirs(os.path.dirname(filepath), exist_ok=True)
+                shutil.copy2(downloaded_path, filepath)
+                return filepath
+        
+        return None
+    
     def _load_components(self):
         print("Loading model components...")
         
@@ -33,19 +69,38 @@ class SemaInference:
             self.config = AutoConfig.from_pretrained(self.model_name, output_hidden_states=True)
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
             
-            with open('data2.pkl', 'rb') as f:
+            # Load data files with auto-download from HF
+            data2_path = self._ensure_file_exists('data/data2.pkl', 'data2.pkl')
+            if not data2_path:
+                raise FileNotFoundError("data2.pkl not found locally or on Hugging Face")
+                
+            with open(data2_path, 'rb') as f:
                 self.mlb = pickle.load(f)
             
             self.label_columns = self.mlb.classes_[:]
             
-            with open('voc_etc.pkl', 'rb') as f:
+            voc_etc_path = self._ensure_file_exists('data/voc_etc.pkl', 'voc_etc.pkl')
+            if not voc_etc_path:
+                raise FileNotFoundError("voc_etc.pkl not found locally or on Hugging Face")
+                
+            with open(voc_etc_path, 'rb') as f:
                 self.voc_etc = pickle.load(f)
                 
-            with open('keyword_doc.pkl', 'rb') as f:
+            keyword_path = self._ensure_file_exists('data/keyword_doc.pkl', 'keyword_doc.pkl')
+            if not keyword_path:
+                raise FileNotFoundError("keyword_doc.pkl not found locally or on Hugging Face")
+                
+            with open(keyword_path, 'rb') as f:
                 self.keyword = pickle.load(f)
             
+            # Load model checkpoint with auto-download
+            checkpoint_filename = os.path.basename(self.checkpoint_path)
+            checkpoint_path = self._ensure_file_exists(self.checkpoint_path, checkpoint_filename)
+            if not checkpoint_path:
+                raise FileNotFoundError(f"Model checkpoint {checkpoint_filename} not found locally or on Hugging Face")
+            
             self.model = VOC_TopicLabeler.load_from_checkpoint(
-                checkpoint_path=self.checkpoint_path,
+                checkpoint_path=checkpoint_path,
                 n_classes=len(self.label_columns),
                 model=self.model_name
             )

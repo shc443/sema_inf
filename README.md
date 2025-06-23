@@ -28,11 +28,11 @@ pip install -e .
 
 ## Required Files
 
-Make sure the following model files are in your working directory:
-- `data2.pkl` - MultiLabelBinarizer for label encoding
-- `voc_etc.pkl` - Filter data for VOC preprocessing
-- `keyword_doc.pkl` - Keyword extraction mappings
-- `team-lucid/deberta-v3-xlarge-korean_20ep_full_mar17_dropna.ckpt` - Model checkpoint
+Make sure the following model files are in your directories:
+- `data/data2.pkl` - MultiLabelBinarizer for label encoding
+- `data/voc_etc.pkl` - Filter data for VOC preprocessing
+- `data/keyword_doc.pkl` - Keyword extraction mappings
+- `model/deberta-v3-xlarge-korean_20ep_full_mar17_dropna.ckpt` - Model checkpoint
 
 ## Usage
 
