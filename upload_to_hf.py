@@ -46,6 +46,8 @@ def upload_to_huggingface(repo_id="shc443/sema-model", token=None):
     # Find checkpoint file with different possible extensions
     checkpoint_patterns = [
         "model/*.ckpt",
+        "model/*small*.ckpt",
+        "model/*xlarge*.ckpt", 
         "model/*_20ep_full_mar17_dropna.ckpt",
         "model/deberta*.ckpt"
     ]
