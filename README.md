@@ -36,35 +36,50 @@ Make sure the following model files are in your directories:
 
 ## Usage
 
-### Basic Usage
+### Simplest Usage (Recommended)
+
+After installation, just put your Excel files in `data/input/` and run:
+```bash
+sema
+```
+
+That's it! The command will:
+- ✅ Automatically process all Excel files in `data/input/`
+- ✅ Save results to `data/output/` with `_output.xlsx` suffix
+- ✅ Skip already processed files
+- ✅ Show progress and results
+
+**Perfect for Google Colab:**
+```python
+# Cell 1: Setup
+!pip install -e .
+
+# Cell 2: Process everything
+!sema
+```
+
+### Standard CLI Usage
 
 Process a single Excel file:
 ```bash
-python cli.py input_file.xlsx
+sema-cli input_file.xlsx -o output_file.xlsx
 ```
 
 Process a directory of Excel files:
 ```bash
-python cli.py data/input/ -o data/output/
+sema-cli data/input/ -o data/output/
 ```
 
 ### Advanced Options
 
 ```bash
-python cli.py input.xlsx \
+sema-cli input.xlsx \
     --output output.xlsx \
     --model team-lucid/deberta-v3-xlarge-korean \
     --checkpoint custom_model.ckpt \
     --batch-size 16 \
     --threshold 0.6 \
     --max-length 512
-```
-
-### Using as installed CLI tool
-
-After installation with pip:
-```bash
-sema-cli input_file.xlsx -o output_file.xlsx
 ```
 
 ## Command Line Arguments

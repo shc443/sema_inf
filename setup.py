@@ -15,13 +15,14 @@ setup(
     description="CLI tool for SEMA ML model inference on VOC data",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=find_packages(),
+    packages=find_packages(where="src"),
     package_dir={"": "src"},
     install_requires=requirements,
     python_requires=">=3.8",
     entry_points={
         "console_scripts": [
-            "sema-cli=src.cli:main",
+            "sema-cli=cli:main",
+            "sema=sema_run:main",
         ],
     },
     classifiers=[
