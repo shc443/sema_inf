@@ -330,21 +330,47 @@ class SemaColabCLI:
             return False
     
     def process_all_files(self):
-        """Process all files in input directory"""
+        """Process all files in input directory, skipping already processed ones"""
         input_files = [f for f in os.listdir('data/input') if f.endswith('.xlsx') and not f.startswith('~')]
-        
+
         if not input_files:
             print("❌ No Excel files found in data/input directory")
-            return
-        
-        print(f"📊 Found {len(input_files)} files to process")
-        
-        success_count = 0
+            return 0
+
+        # Check which files are already processed
+        output_files = set()
+        if os.path.exists('data/output'):
+            for f in os.listdir('data/output'):
+                if f.endswith('_output.xlsx'):
+                    # Extract original filename
+                    original = f.replace('_output.xlsx', '.xlsx')
+                    output_files.add(original)
+
+        # Filter to only unprocessed files
+        unprocessed = []
+        already_done = []
         for filename in input_files:
+            if filename in output_files:
+                already_done.append(filename)
+            else:
+                unprocessed.append(filename)
+
+        print(f"📊 Found {len(input_files)} total files in data/input/")
+        if already_done:
+            print(f"⏭️  Skipping {len(already_done)} already processed files")
+
+        if not unprocessed:
+            print("✅ All files already processed!")
+            return 0
+
+        print(f"🔄 Processing {len(unprocessed)} new files...")
+
+        success_count = 0
+        for filename in unprocessed:
             if self.process_file(filename):
                 success_count += 1
-        
-        print(f"🎉 Successfully processed {success_count}/{len(input_files)} files")
+
+        print(f"🎉 Successfully processed {success_count}/{len(unprocessed)} new files")
         return success_count
     
     def download_results(self):
