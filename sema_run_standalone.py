@@ -47,9 +47,22 @@ def main():
 
     # Import and run the CLI with default arguments
     try:
-        # Add src to path for imports
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
-        from cli import SemaInference
+        # Fix imports for standalone execution
+        project_root = os.path.dirname(os.path.abspath(__file__))
+        src_dir = os.path.join(project_root, 'src')
+
+        # Add src directory to Python path
+        if src_dir not in sys.path:
+            sys.path.insert(0, src_dir)
+
+        # Import with package context to handle relative imports
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("cli", os.path.join(src_dir, "cli.py"))
+        cli_module = importlib.util.module_from_spec(spec)
+        sys.modules['cli'] = cli_module
+        spec.loader.exec_module(cli_module)
+
+        SemaInference = cli_module.SemaInference
 
         # Initialize inference engine
         print("🔧 Loading SEMA model...")
