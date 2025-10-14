@@ -126,10 +126,11 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# Model files and checkpoints
+# Model files and checkpoints (too large for GitHub)
 *.ckpt
 *.pth
 *.bin
+model/*.ckpt
 
 # Data files (allow required pkl files)
 *.xlsx
@@ -138,8 +139,7 @@ data/input/
 data/output/
 data/train/
 
-# Keep required model files
+# Keep required small pkl files
 !data/data2.pkl
 !data/voc_etc.pkl
 !data/keyword_doc.pkl
-!model/*.ckpt
