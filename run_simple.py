@@ -48,15 +48,6 @@ def main():
             print("=" * 50)
             print(f"✅ Successfully processed {success_count} files!")
             print(f"📁 Results saved to: data/output/")
-
-            # Note: Auto-download only works in notebook cells, not scripts
-            print()
-            print("📥 To download results, run this in a Colab cell:")
-            print("   from google.colab import files")
-            print("   import os")
-            print("   for f in os.listdir('data/output'):")
-            print("       if f.endswith('.xlsx'):")
-            print("           files.download(f'data/output/{f}')")
         else:
             print()
             print("❌ No files were processed successfully")
