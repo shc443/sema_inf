@@ -17,7 +17,7 @@ if errorlevel 1 (
 )
 
 REM Run the Python GUI application
-python SEMA_Easy_Run.py
+python sema_run_standalone.py
 
 echo.
 echo Press any key to exit...
