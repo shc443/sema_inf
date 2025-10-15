@@ -49,14 +49,14 @@ def main():
             print(f"✅ Successfully processed {success_count} files!")
             print(f"📁 Results saved to: data/output/")
 
-            # If in Colab, download results
-            try:
-                import google.colab
-                print()
-                print("📥 Downloading results...")
-                sema.download_results()
-            except ImportError:
-                pass
+            # Note: Auto-download only works in notebook cells, not scripts
+            print()
+            print("📥 To download results, run this in a Colab cell:")
+            print("   from google.colab import files")
+            print("   import os")
+            print("   for f in os.listdir('data/output'):")
+            print("       if f.endswith('.xlsx'):")
+            print("           files.download(f'data/output/{f}')")
         else:
             print()
             print("❌ No files were processed successfully")
