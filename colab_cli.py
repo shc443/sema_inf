@@ -46,9 +46,9 @@ class SemaColabCLI:
             # Check if we're in Colab
             import google.colab
             print("✅ Running in Google Colab")
-            
-            # Set Java environment for KoNLPy
-            os.environ['JAVA_HOME'] = '/usr/lib/jvm/java-8-openjdk-amd64'
+
+            # Set Java environment for KoNLPy (use Java 11 to avoid SIGSEGV crashes)
+            os.environ['JAVA_HOME'] = '/usr/lib/jvm/java-11-openjdk-amd64'
             
             # Install and test KoNLPy
             import subprocess
@@ -444,17 +444,17 @@ Available commands:
 def setup_colab():
     """Setup Google Colab environment"""
     print("🔧 Setting up Google Colab environment...")
-    
+
     # Install system dependencies
     import subprocess
     import sys
     try:
         subprocess.run(['apt-get', 'update', '-qq'], check=True)
-        subprocess.run(['apt-get', 'install', '-y', '-qq', 'openjdk-8-jdk'], check=True)
-        print("✅ Java installed")
-        
-        # Set Java environment immediately
-        os.environ['JAVA_HOME'] = '/usr/lib/jvm/java-8-openjdk-amd64'
+        subprocess.run(['apt-get', 'install', '-y', '-qq', 'openjdk-11-jdk'], check=True)
+        print("✅ Java 11 installed")
+
+        # Set Java environment immediately (Java 11 to avoid SIGSEGV crashes)
+        os.environ['JAVA_HOME'] = '/usr/lib/jvm/java-11-openjdk-amd64'
         print("✅ Java environment set")
         
     except:
