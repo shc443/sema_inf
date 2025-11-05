@@ -57,6 +57,11 @@ def main():
 
     # Use the colab_cli which handles imports correctly
     try:
+        # Force reload of colab_cli to pick up git updates
+        import importlib
+        if 'colab_cli' in sys.modules:
+            importlib.reload(sys.modules['colab_cli'])
+
         from colab_cli import SemaColabCLI
 
         print("Initializing SEMA...")
