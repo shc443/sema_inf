@@ -135,9 +135,13 @@ model/*.ckpt
 # Data files (allow required pkl files)
 *.xlsx
 *.csv
-data/input/
-data/output/
+data/input/*
+data/output/*
 data/train/
+
+# Keep directory structure with .gitkeep
+!data/input/.gitkeep
+!data/output/.gitkeep
 
 # Keep required small pkl files
 !data/data2.pkl
